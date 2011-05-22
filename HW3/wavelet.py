@@ -82,12 +82,18 @@ def Pyramid():
                 g = N.append(g, N.average(slice_array))
     print "This is g" , g
 
-#get left split of array                                                        
+                                                     
 def UWA_left_split(arr):                                                        
+    """
+    get left split of array
+    """
     col = N.shape(arr)[1]
     arr = arr[:, : col/2]                                                         
     return arr
 def UWA_right_split(arr):
+    """
+    get right split of array
+    """
     col = N.shape(arr)[1]
     arr = arr[: , col/2:]    
     return arr
