@@ -14,50 +14,64 @@ Note: for LCC, you can use the sample correlation coefficients formula from
 http://en.wikipedia.org/wiki/Correlation_and_dependence
 """
 
-def Pyramid():
-    
-    #RAVEL EXAMPLE
-    X = N.matrix('1 2 3 4; 5 6 7 8;9 10 11 12;13 14 15 16')
-    flat = N.ravel(X)
-    print "This is the flatten array" , flat
-    
-    #RESHAPE EXAMPLE
-    B=N.arange(48).reshape(4,4,3)
-    flat2 = N.ravel(B)
-    #print "This is B array ", "\n" , B 
-    #print "This is flatten 4 x 4 x 3:" , "\n" , flat2 
-    #C= N.mat(B.copy())
-    #print "THis is matrix" , C
-    """
-    """
-    C = N.arange(4).reshape(2,2)
-    a = N.array([[1, 2],[3, 4]])  
-    
-    #REPEAT EXAMPLE
-    #b = N.zeros((4,4))  
-    #b[:,1:-1] = N.repeat(a, 2,axis=0)
-    #print "This is b" , b
-    #c = N.arange(4)
-    """
-    c = N.array([2 ,3, 5, 6])
-    d = N.array([])
-    for i in c:
-        #d = c.repeat(i)
-         n = N.repeat(i , 2)
-         d= N.append(d, n)
-    print "This is c \n" , d
-    d = d.reshape(2, 4)
-    print "this is d ", "\n", d
-    """
-    e = N.array([[1,2],[3,4]])
-    f = N.zeros((4, 4))
-    #f[:,1 : -1] = N.repeat(e, 2, axis=0)
 
-    #ENLARGING ARRAY
-    j = N.array([[1,2],[3,4]])   
-    l =N.repeat(j, 2, axis = 0)
-    k =N.repeat(l, 2, axis = 1)
     
+    
+
+def _get4widths(width): 
+    """
+    Professor provided function to get widths
+    """
+    try:                                                                        
+        width = int(width)                                                      
+        width = (width, width, width, width)                                    
+    except TypeError:                                                           
+        width = tuple(width)                                                    
+        if len(width) != 4:                                                     
+            raise ValueError("width must be either an integer or a 4-tuple")    
+        if any([x < 0 for x in width]):                                         
+            raise ValueError("negative value in width=%s" % width)              
+        return width            
+
+def mirrorpad(img, width):                            
+    """Return the image resulting from padding width amount of pixels on each                                                  
+    sides of the image img.  The padded values are mirror image with respect to                                                
+    the borders of img.  Width can be an integer or a tuple of the form (north,                                                
+    south, east, west).                                                                                                        
+    """                                                                                                                        
+    n, s, e, w = _get4widths(width)                                                                                            
+    row = N.shape(img)[0]                                                                                                      
+                                                                                                                                                               
+    col = N.shape(img)[1]                                                                                                      
+    
+    if n != 0:                                                                                                                 
+        north = img[:n,:]                                                                                                      
+        img = N.row_stack((north[::-1,:], img))                                                                                
+        print "This is img north", img                                                                                         
+    if s != 0:                                                                                                                 
+        south = img[-s:,:]                                                                                                     
+        img = N.row_stack((img, south[::-1,:]))                                                                                
+        print "This is img south", img                                                                                         
+    if e != 0:                                                                                                                 
+        east = img[:,-e:]                                                                                                      
+        img = N.column_stack((img, east[:,::-1]))                                                                              
+        print "This is img east", img                                                                                          
+    if w != 0:                                                                                                                 
+        west = img[:,:w]                                                                                                       
+        img = N.column_stack((west[:,::-1], img))                                                                              
+        
+        
+        
+        return img
+    
+    
+def enlarge(arr):    
+    #ENLARGING ARRAY
+    #j = N.array([[1,2],[3,4]])   
+    l =N.repeat(arr, 2, axis = 0)
+    enlarged =N.repeat(l, 2, axis = 1)
+    return enlarged
+def Pyramid():    
     #ARRAY T
     x = 4
     y = 4
@@ -161,26 +175,34 @@ def UWA2(arr):
     
 
 
-def window(im):
+def window(PAN, MS):
     """
     3X3 sliding window pass in image and a tuple of the window size e.g. (3,3)
     """
+    new_arr  = N.array([])
     #im = N.arange(36).reshape(6,6)
     wsize = (3,3)
     dx, dy = wsize
-    nx = im.shape[1] -dx+1
-    ny = im.shape[0]- dy+1
-    results= N.array([])
+    nx = PAN.shape[1] -dx+1
+    ny = PAN.shape[0]- dy+1
+    nx = MS.shape[1] -dx+1
+    ny = MS.shape[0]- dy+1
+    #results= N.array([])
     for i in xrange(ny):
         for j in xrange(nx):
-            g =  im[i:i+dy, j:j+dx]
-            g = N.ravel(g)
+            PANW =  PAN[i:i+dy, j:j+dx]
+            PANW = N.ravel(PAN)
+            MSW=  MSW[i:i+dy, j:j+dx]
+            MSW = N.ravel(MS)
+            LCC = lcc(PANW, MSW)
+            new_arr = N.append(new_arr,LCC)
+    return new_arr
 
-def lcc():
-    new_arr = N.array([])
-    PAN = N.arange(9)
-    MS = N.arange(9)
-    MS = MS[::-1]
+def lcc(PAN, MS):
+    #new_arr = N.array([])
+    #PAN = N.arange(9)
+    #MS = N.arange(9)
+    #MS = MS[::-1]
     numerator = 0
     denominator = 0
     for i in PAN:
@@ -189,7 +211,7 @@ def lcc():
     
     print "numerator" , numerator, "denominator" ,denominator
     result = numerator/float(sqrt(denominator))
-    print "this is result" , result
+    return result
 
 def top_split(arr):
     """
@@ -210,8 +232,7 @@ def bottom_split(arr):
 
 def main():
     PAN = N.arange(144).reshape(12,12)
-    MS = N.arange(144)
-    MS = MS[::-1].reshape(12,12)
+    
     """
     PAN Image functions
     """
@@ -229,14 +250,25 @@ def main():
     """
     Lets take lft_splitted and split it into LL and LH
     """
-    LL = top_split(lft_splitted)
-    LH = bottom_split(lft_splitted)
+    LL_pan = top_split(lft_splitted)
+    LH_pan = bottom_split(lft_splitted)
     """
     Lets take rgt_splitted and split it into HL and HH
     """
-    HL = top_split(rgt_splitted)
-    HH = bottom_split(rgt_splitted)
+    HL_pan = top_split(rgt_splitted)
+    HH_pan = bottom_split(rgt_splitted)
     
+    
+    """
+    MS Functions
+    """
+    """
+    MS Red band
+    """
+    MS_R = N.arange(36)
+    MS_R = MS[::-1].reshape(6,6)
+    MS_R = enlarge(MS)
+    h = UWA(MS_R)
     
     
 if __name__== "__main__":
