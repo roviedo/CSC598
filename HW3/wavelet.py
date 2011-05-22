@@ -47,15 +47,15 @@ def mirrorpad(img, width):
     if n != 0:                                                                                                                 
         north = img[:n,:]                                                                                                      
         img = N.row_stack((north[::-1,:], img))                                                                                
-        print "This is img north", img                                                                                         
+                                                                                       
     if s != 0:                                                                                                                 
         south = img[-s:,:]                                                                                                     
         img = N.row_stack((img, south[::-1,:]))                                                                                
-        print "This is img south", img                                                                                         
+        
     if e != 0:                                                                                                                 
         east = img[:,-e:]                                                                                                      
         img = N.column_stack((img, east[:,::-1]))                                                                              
-        print "This is img east", img                                                                                          
+        
     if w != 0:                                                                                                                 
         west = img[:,:w]                                                                                                       
         img = N.column_stack((west[:,::-1], img))                                                                              
@@ -244,19 +244,21 @@ def main():
     right_split = UWA_right_split(g)
     #print "This is right split " , right_split
     lft_splitted =UWA2(left_split)
-    print "This is lft splitted" , lft_splitted
+    #print "This is lft splitted" , lft_splitted
     rgt_splitted = UWA2(right_split)
-    print "This is right splitted", rgt_splitted
+    #print "This is right splitted", rgt_splitted
     """
     Lets take lft_splitted and split it into LL and LH
     """
     LL_pan = top_split(lft_splitted)
+    #print "This is LLpan" , LL_pan
     LH_pan = bottom_split(lft_splitted)
     """
     Lets take rgt_splitted and split it into HL and HH
     """
     HL_pan = top_split(rgt_splitted)
     HH_pan = bottom_split(rgt_splitted)
+    padded_img = mirrorpad(LL_pan,(1,1,1,1))
     
     
     """
@@ -266,10 +268,100 @@ def main():
     MS Red band
     """
     MS_R = N.arange(36)
-    MS_R = MS[::-1].reshape(6,6)
-    MS_R = enlarge(MS)
+    MS_R = MS_R[::-1].reshape(6,6)
+    MS_R = enlarge(MS_R)
     h = UWA(MS_R)
     
+    left_split = UWA_left_split(MS_R)
+    #print "this is left split", left_split
+    right_split = UWA_right_split(MS_R)
+    #print "This is right split " , right_split
+    lft_splitted =UWA2(left_split)
+    #print "This is lft splitted" , lft_splitted
+    rgt_splitted = UWA2(right_split)
+    #print "This is right splitted", rgt_splitted
+    """
+    Lets take lft_splitted and split it into LL and LH
+    """
+    LL_MS_R = top_split(lft_splitted)
+    LH_MS_R = bottom_split(lft_splitted)
+    """
+    Lets take rgt_splitted and split it into HL and HH
+    """
+    HL_MS_R = top_split(rgt_splitted)
+    HH_MS_R = bottom_split(rgt_splitted)
+    
+    pad_LL_MS_R = mirrorpad(LL_MS_R, (1,1,1,1)) 
+    
+    """
+    END of MS Red BAND
+    """
+    
+    """
+    MS Green band
+    """
+    MS_G = N.arange(36)
+    MS_G = MS_G[::-1].reshape(6,6)
+    MS_G = enlarge(MS_G)
+    h = UWA(MS_G)
+    
+    left_split = UWA_left_split(MS_G)
+    #print "this is left split", left_split
+    right_split = UWA_right_split(MS_G)
+    #print "This is right split " , right_split
+    lft_splitted =UWA2(left_split)
+    #print "This is lft splitted" , lft_splitted
+    rgt_splitted = UWA2(right_split)
+    #print "This is right splitted", rgt_splitted
+    """
+    Lets take lft_splitted and split it into LL and LH
+    """
+    LL_MS_G = top_split(lft_splitted)
+    LH_MS_G = bottom_split(lft_splitted)
+    """
+    Lets take rgt_splitted and split it into HL and HH
+    """
+    HL_MS_G = top_split(rgt_splitted)
+    HH_MS_G = bottom_split(rgt_splitted)
+    
+    pad_LL_MS_G = mirrorpad(LL_MS_G, (1,1,1,1)) 
+    
+    """
+    END of MS Green BAND
+    """
+    
+    """
+    MS Blue band
+    """
+    MS_B = N.arange(36)
+    MS_B = MS_B[::-1].reshape(6,6)
+    MS_B = enlarge(MS_B)
+    h = UWA(MS_B)
+    
+    left_split = UWA_left_split(MS_B)
+    #print "this is left split", left_split
+    right_split = UWA_right_split(MS_R)
+    #print "This is right split " , right_split
+    lft_splitted =UWA2(left_split)
+    #print "This is lft splitted" , lft_splitted
+    rgt_splitted = UWA2(right_split)
+    #print "This is right splitted", rgt_splitted
+    """
+    Lets take lft_splitted and split it into LL and LH
+    """
+    LL_MS_B = top_split(lft_splitted)
+    LH_MS_B = bottom_split(lft_splitted)
+    """
+    Lets take rgt_splitted and split it into HL and HH
+    """
+    HL_MS_B = top_split(rgt_splitted)
+    HH_MS_B = bottom_split(rgt_splitted)
+    
+    pad_LL_MS_B = mirrorpad(LL_MS_B, (1,1,1,1)) 
+    
+    """
+    END of MS Blue BAND
+    """
     
 if __name__== "__main__":
     main()

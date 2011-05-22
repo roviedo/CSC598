@@ -162,8 +162,9 @@ def window():
     for i in xrange(ny):
         for j in xrange(nx):
             g =  im[i:i+dy, j:j+dx]
+            print "this is window" , g
             g = N.ravel(g)
-
+    print "this is g " , g
 def lcc():
     new_arr = N.array([])
     PAN = N.arange(9)
@@ -185,5 +186,5 @@ if __name__== "__main__":
     #Pyramid()
     #UWA(A)
     #UWA2()
-    #window()
-    lcc()
+    window()
+    #lcc()
