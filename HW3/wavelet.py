@@ -126,9 +126,14 @@ def UWA(arr):
     d[:,columns/2: ] = e
     return d
     
-#pass in left half and right half seperately    
-def UWA2():
-    arr = N.arange(8).reshape(4,2)
+ 
+def UWA2(arr):
+    """
+    This function takes in the array from UWA and performs Undecimated 
+    Wavelet Analysis one more time and returns the left(LL and LH) or right
+    (HL and HH) depends on the one needed when function call.
+    """
+    #arr = N.arange(8).reshape(4,2)
     rows = N.shape(arr)[0]
     columns = N.shape(arr)[1]
     c = N.array([])
@@ -139,25 +144,28 @@ def UWA2():
     while (i<len(B)):
         if i%2 == 0:
             array_slice = B[i:(2+i)]
-            #This takes care of Jhh
+            #This takes care of Jhh(LL) or Jgh(HL)
             c = N.append(c,N.average(array_slice))
-            #This takes care of Jhg
+            #This takes care of Jhg(LH) or Jgg(HH)
             e = N.append(e,array_slice[1]-array_slice[0])
-            print "this is e" , e
+            #print "this is e" , e
         i = i+1
-    #This reshapes Jhh
+    #This reshapes Jhh(LL) or Jgh(HL)
     c = N.reshape(c, (rows/2, columns))
-    #This reshapes Jhg
+    #This reshapes Jhg(LH) or Jgg(HH)
     e = N.reshape(e, (rows/2,columns))
     #These two lines input  Jhh & Jhg into array
     d[:rows/2,:] = c
     d[rows/2: ,:] = e
-    print d 
+    return d 
     
 
-#3X3 sliding window pass in image and a tuple of the window size e.g. (3,3)
-def window():
-    im = N.arange(36).reshape(6,6)
+
+def window(im):
+    """
+    3X3 sliding window pass in image and a tuple of the window size e.g. (3,3)
+    """
+    #im = N.arange(36).reshape(6,6)
     wsize = (3,3)
     dx, dy = wsize
     nx = im.shape[1] -dx+1
@@ -182,19 +190,54 @@ def lcc():
     print "numerator" , numerator, "denominator" ,denominator
     result = numerator/float(sqrt(denominator))
     print "this is result" , result
-    
+
+def top_split(arr):
+    """
+    This is a function to split an array in half along y axis and return top piece
+    """
+    row = N.shape(arr)[0]
+    col= N.shape(arr)[1]
+    a= arr[:row/2, :]
+    return a
+def bottom_split(arr):
+    """
+    This is a function to split an array in half along y axis and return bottom piece
+    """
+    row = N.shape(arr)[0]
+    col = N.shape(arr)[1]
+    b = arr[row/2: , :]
+    return b
+
 def main():
     PAN = N.arange(144).reshape(12,12)
     MS = N.arange(144)
     MS = MS[::-1].reshape(12,12)
-    
+    """
+    PAN Image functions
+    """
     g =UWA(PAN)
-    print "this is g" , g
+    #print "this is g" , g
     #m = N.arange(16).reshape(4,4)
     left_split = UWA_left_split(g)
-    print "this is left split", left_split
-    #h =UWA2(left_split)
-    #print "This is UWA2 for left side " , h
+    #print "this is left split", left_split
+    right_split = UWA_right_split(g)
+    #print "This is right split " , right_split
+    lft_splitted =UWA2(left_split)
+    print "This is lft splitted" , lft_splitted
+    rgt_splitted = UWA2(right_split)
+    print "This is right splitted", rgt_splitted
+    """
+    Lets take lft_splitted and split it into LL and LH
+    """
+    LL = top_split(lft_splitted)
+    LH = bottom_split(lft_splitted)
+    """
+    Lets take rgt_splitted and split it into HL and HH
+    """
+    HL = top_split(rgt_splitted)
+    HH = bottom_split(rgt_splitted)
+    
+    
     
 if __name__== "__main__":
     main()
