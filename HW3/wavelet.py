@@ -131,10 +131,10 @@ def UWA(arr):
         i = i+1
     #This reshapes Jh
     c = N.reshape(c, (rows, columns/2))
-    print "This is c" , c
+    #print "This is c" , c
     #This reshapes Jg
     e = N.reshape(e, (rows,columns/2))
-    print "this is e" , e
+    #print "this is e" , e
     #These two lines input  Jh & Jg into array
     d[:,0:columns/2] = c
     d[:,columns/2: ] = e
@@ -190,26 +190,29 @@ def window(PAN, MS):
     #results= N.array([])
     for i in xrange(ny):
         for j in xrange(nx):
-            PANW =  PAN[i:i+dy, j:j+dx]
-            PANW = N.ravel(PAN)
-            MSW=  MSW[i:i+dy, j:j+dx]
-            MSW = N.ravel(MS)
+            PANW = PAN[i:i+dy, j:j+dx]
+            #PANW = N.ravel(PAN)
+            MSW=  MS[i:i+dy, j:j+dx]
+            #MSW = N.ravel(MS)
+            print "This is PANW" , PANW , "\n", "This is MSW" , MSW
             LCC = lcc(PANW, MSW)
             new_arr = N.append(new_arr,LCC)
     return new_arr
 
 def lcc(PAN, MS):
     #new_arr = N.array([])
-    #PAN = N.arange(9)
-    #MS = N.arange(9)
+    PAN = N.ravel(PAN)
+    MS = N.ravel(MS)
+    print "This is @@PAN" , PAN
+    print "This is @@MS" , MS
     #MS = MS[::-1]
     numerator = 0
     denominator = 0
-    for i in PAN:
+    for i in range(9):
         numerator += ((PAN[i] - N.average(PAN)) * (MS[i]-N.average(MS)))
         denominator += ((PAN[i]-N.average(PAN))**2 )*((MS[i]-N.average(MS))**2)
     
-    print "numerator" , numerator, "denominator" ,denominator
+    #print "numerator" , numerator, "denominator" ,denominator
     result = numerator/float(sqrt(denominator))
     return result
 
@@ -384,6 +387,10 @@ def main():
     pad_HL_MS_B = mirrorpad(HL_MS_B, (1,1,1,1)) 
     pad_HH_MS_B = mirrorpad(HH_MS_B, (1,1,1,1)) 
     
+    LCC_LL_MS_R = window(pad_LL_pan,pad_LL_MS_R)
+    LCC_LL_MS_G = window(pad_LL_pan,pad_LL_MS_G)
+    LCC_LL_MS_B = window(pad_LL_pan,pad_LL_MS_B)
+    
     
     
     """
@@ -399,5 +406,8 @@ if __name__== "__main__":
     #MS = MS[::-1].reshape(12,12)
     #UWA(PAN)
     #UWA2()
-    #window()
+    #r = N.arange(64).reshape(8,8)
+    #u = N.arange(64).reshape(8,8)
+    
+    #window(r, u)
     #lcc()
