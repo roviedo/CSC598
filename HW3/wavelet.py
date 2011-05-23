@@ -196,15 +196,65 @@ def window(PAN, MS):
             #MSW = N.ravel(MS)
             print "This is PANW" , PANW , "\n", "This is MSW" , MSW
             LCC = lcc(PANW, MSW)
+            
             new_arr = N.append(new_arr,LCC)
     return new_arr
+
+"""Window for LG"""
+def windowDF(PAN, MS, HL_PAN, HL_MS):
+    """
+    3X3 sliding window pass in image and a tuple of the window size e.g. (3,3)
+    """
+    new_arr  = N.array([])
+    #im = N.arange(36).reshape(6,6)
+    wsize = (3,3)
+    dx, dy = wsize
+    nx = PAN.shape[1] -dx+1
+    ny = PAN.shape[0]- dy+1
+    #nx = MS.shape[1] -dx+1
+    #ny = MS.shape[0]- dy+1
+    HLA = 0
+    #results= N.array([])
+    for i in xrange(ny):
+        for j in xrange(nx):
+            PANW = PAN[i:i+dy, j:j+dx]
+            MSW=  MS[i:i+dy, j:j+dx]
+            HL_PANW = HL_PAN[i:i+dy, j:j+dx]
+            HL_MSW = HL_MS[i:i+dy, j:j+dx]
+            #print "Thi is HL_PAN" , HL_PANW
+            #print "This is HL_MS " , HL_MSW
+            #HL_PAN = N.ravel(HL_PAN)
+            #HL_MS = N.ravel(HL_MS)
+            LCC = lcc(PANW, MSW)
+            #print "This is LCC" , LCC
+            LG = lg(PANW, MSW)
+            """If LCC is greater than threshold(0.6)"""
+            if LCC<0.6:
+                LG = 0
+            else:
+                HLA = LG*HL_PAN[4] +HL_MS[4] 
+            new_arr = N.append(new_arr,HLA)
+    return new_arr
+
+def lg(PAN, MS):                                                                      
+    PAN = N.ravel(PAN)                                                                
+    MS = N.ravel(MS)                                                                  
+    PANavg = N.average(PAN)                                                           
+    MSavg = N.average(MS)                                                             
+    PANvar = 0                                                                        
+    MSvar = 0                                                                         
+    for i in range(9):                                                                
+        PANvar += (PAN[i] - PANavg)                                                   
+        MSvar += (MS[i] -   MSavg)                                                    
+        print "This is i PANvar" , PANvar                                             
+        print "This is i MSvar" , MSvar                                               
+        LG = MSvar/float(PANvar)                                                      
+    return LG   
 
 def lcc(PAN, MS):
     #new_arr = N.array([])
     PAN = N.ravel(PAN)
     MS = N.ravel(MS)
-    print "This is @@PAN" , PAN
-    print "This is @@MS" , MS
     #MS = MS[::-1]
     numerator = 0
     denominator = 0
@@ -215,6 +265,7 @@ def lcc(PAN, MS):
     #print "numerator" , numerator, "denominator" ,denominator
     result = numerator/float(sqrt(denominator))
     return result
+
 
 def top_split(arr):
     """
@@ -387,14 +438,33 @@ def main():
     pad_HL_MS_B = mirrorpad(HL_MS_B, (1,1,1,1)) 
     pad_HH_MS_B = mirrorpad(HH_MS_B, (1,1,1,1)) 
     
+    """LCC LL PAN with LL MS Red band"""
     LCC_LL_MS_R = window(pad_LL_pan,pad_LL_MS_R)
+    """LCC LL PAN with LL MS Green band"""
     LCC_LL_MS_G = window(pad_LL_pan,pad_LL_MS_G)
+    """LCC LL PAN with LL MS Blue band"""
     LCC_LL_MS_B = window(pad_LL_pan,pad_LL_MS_B)
     
     
     
+    HLRED = windowDF(pad_LL_pan, pad_LL_MS_R,pad_HL_pan,pad_HL_MS_R)
+    HHRED = windowDF(pad_LL_pan,pad_LL_MS_R,pad_HH_pan,pad_HH_MS_R)
+    LHRED = windowDF(pad_LL_pan,pad_LL_MS_R,pad_LH_pan,pad_LH_MS_R)
+    
+    HLGREEN = windowDF(pad_LL_pan, pad_LL_MS_G, pad_HL_pan,pad_HL_MS_R)
+    HHGREEN = windowDF(pad_LL_pan,pad_LL_MS_G,pad_HH_pan,pad_HH_MS_G)
+    LHGREEN = windowDF(pad_LL_pan,pad_LL_MS_G,pad_LH_pan,pad_LH_MS_G)
+    
+    
+    HLBLUE = windowDF(pad_LL_pan, pad_LL_MS_B, pad_HL_pan,pad_HL_MS_B)
+    HHBLUE = windowDF(pad_LL_pan,pad_LL_MS_B,pad_HH_pan,pad_HH_MS_B)
+    LHBLUE = windowDF(pad_LL_pan,pad_LL_MS_B,pad_LH_pan,pad_LH_MS_B)
     """
     END of LCC
+    """
+    
+    """
+    
     """
 if __name__== "__main__":
     main()
