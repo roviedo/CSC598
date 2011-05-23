@@ -250,6 +250,7 @@ def main():
     """
     Lets take lft_splitted and split it into LL and LH
     """
+    
     LL_pan = top_split(lft_splitted)
     #print "This is LLpan" , LL_pan
     LH_pan = bottom_split(lft_splitted)
@@ -258,8 +259,10 @@ def main():
     """
     HL_pan = top_split(rgt_splitted)
     HH_pan = bottom_split(rgt_splitted)
-    padded_img = mirrorpad(LL_pan,(1,1,1,1))
     
+    """
+    END of PAN UWA
+    """
     
     """
     MS Functions
@@ -290,9 +293,6 @@ def main():
     """
     HL_MS_R = top_split(rgt_splitted)
     HH_MS_R = bottom_split(rgt_splitted)
-    
-    pad_LL_MS_R = mirrorpad(LL_MS_R, (1,1,1,1)) 
-    
     """
     END of MS Red BAND
     """
@@ -323,9 +323,6 @@ def main():
     """
     HL_MS_G = top_split(rgt_splitted)
     HH_MS_G = bottom_split(rgt_splitted)
-    
-    pad_LL_MS_G = mirrorpad(LL_MS_G, (1,1,1,1)) 
-    
     """
     END of MS Green BAND
     """
@@ -357,12 +354,41 @@ def main():
     HL_MS_B = top_split(rgt_splitted)
     HH_MS_B = bottom_split(rgt_splitted)
     
-    pad_LL_MS_B = mirrorpad(LL_MS_B, (1,1,1,1)) 
-    
     """
     END of MS Blue BAND
     """
+    """
+    LCC
+    """
+    """PADDED PAN Image"""
+    pad_LL_pan = mirrorpad(LL_pan,(1,1,1,1))
+    pad_LH_pan = mirrorpad(LH_pan,(1,1,1,1))
+    pad_HL_pan = mirrorpad(HL_pan,(1,1,1,1))
+    pad_HH_pan = mirrorpad(HH_pan,(1,1,1,1))
     
+    """PADDED MS Red Band"""
+    pad_LL_MS_R = mirrorpad(LL_MS_R, (1,1,1,1)) 
+    pad_LH_MS_R = mirrorpad(LH_MS_R, (1,1,1,1)) 
+    pad_HL_MS_R = mirrorpad(HL_MS_R, (1,1,1,1)) 
+    pad_HH_MS_R = mirrorpad(HH_MS_R, (1,1,1,1)) 
+    
+    """PADDED MS Green Band"""
+    pad_LL_MS_G = mirrorpad(LL_MS_G, (1,1,1,1)) 
+    pad_LH_MS_G = mirrorpad(LH_MS_G, (1,1,1,1)) 
+    pad_HL_MS_G = mirrorpad(HL_MS_G, (1,1,1,1)) 
+    pad_HH_MS_G = mirrorpad(HH_MS_G, (1,1,1,1)) 
+    
+    """PADDED MS Blue Band"""
+    pad_LL_MS_B = mirrorpad(LL_MS_B, (1,1,1,1)) 
+    pad_LH_MS_B = mirrorpad(LH_MS_B, (1,1,1,1)) 
+    pad_HL_MS_B = mirrorpad(HL_MS_B, (1,1,1,1)) 
+    pad_HH_MS_B = mirrorpad(HH_MS_B, (1,1,1,1)) 
+    
+    
+    
+    """
+    END of LCC
+    """
 if __name__== "__main__":
     main()
     #A=N.arange(16).reshape((4,4))
