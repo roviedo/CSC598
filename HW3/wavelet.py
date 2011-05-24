@@ -78,7 +78,22 @@ def mirrorpad(img, width):
         
         
         return img
-    
+
+def mirrorunpad(img, width):
+    """Return unpadded image of img padded with :func:mirrorpad.
+    """
+    n, s, e, w = _get4widths(width)
+    # index of -0 refers to the first element
+    if s == 0:
+        s = img.shape[0]
+    else:
+        s = -s
+    if e == 0:
+        e = img.shape[1]
+    else:
+        e = -e
+    return img[n:s, w:e]
+        
     
 def enlarge(arr):    
     #ENLARGING ARRAY
@@ -220,37 +235,45 @@ def windowDF(PAN, MS, HL_PAN, HL_MS):
     """
     3X3 sliding window pass in image and a tuple of the window size e.g. (3,3)
     """
+    print "This is PAN shape" , N.shape(PAN)
     new_arr  = N.array([])
     #im = N.arange(36).reshape(6,6)
     wsize = (3,3)
     dx, dy = wsize
     nx = PAN.shape[1] -dx+1
     ny = PAN.shape[0]- dy+1
+    print "this is NX" , nx
     #nx = MS.shape[1] -dx+1
     #ny = MS.shape[0]- dy+1
     HLA = 0
     #results= N.array([])
+    width = PAN.shape[1]-2
+    
+    length = PAN.shape[0]-2
+    print "this is length", length, "this is width " , width
     for i in xrange(ny):
         for j in xrange(nx):
             PANW = PAN[i:i+dy, j:j+dx]
             MSW=  MS[i:i+dy, j:j+dx]
             HL_PANW = HL_PAN[i:i+dy, j:j+dx]
             HL_MSW = HL_MS[i:i+dy, j:j+dx]
-            print "Thi is HL_PAN" , HL_PANW
-            print "This is HL_MS " , HL_MSW
+            #print "Thi is HL_PAN" , HL_PANW
+            #print "This is HL_MS " , HL_MSW
             HL_PANW = N.ravel(HL_PAN)
             HL_MSW = N.ravel(HL_MS)
             LCC = lcc(PANW, MSW)
-            print "This is LCC" , LCC
+            #print "This is LCC" , LCC
             LG = lg(PANW, MSW)
-            print "this is LG" ,LG
+            #print "this is LG" ,LG
             """If LCC is greater than threshold(0.6)"""
             if LCC<0.6:
                 LG = 0
             else:
                 HLA = LG*HL_PANW[4] +HL_MSW[4] 
             new_arr = N.append(new_arr,HLA)
-    return new_arr
+    new_arr2D =  N.reshape(new_arr,(length,width))
+    
+    return new_arr2D
 
 def lg(PAN, MS):                                                                      
     """
@@ -267,7 +290,10 @@ def lg(PAN, MS):
         MSvar += (MS[i] -   MSavg)                                                    
         #print "This is i PANvar" , PANvar                                             
         #print "This is i MSvar" , MSvar                                               
-        LG = MSvar/float(PANvar)                                                      
+        if float(PANvar) == 0:
+            LG = 0
+        else:
+            LG = MSvar/float(PANvar)                                                      
     return LG   
 
 def lcc(PAN, MS):
@@ -285,7 +311,10 @@ def lcc(PAN, MS):
         denominator += ((PAN[i]-N.average(PAN))**2 )*((MS[i]-N.average(MS))**2)
     
     #print "numerator" , numerator, "denominator" ,denominator
-    result = numerator/float(sqrt(denominator))
+    if float(sqrt(denominator)) == 0:
+        result = 0
+    else:
+        result = numerator/float(sqrt(denominator))
     return result
 
 
@@ -308,12 +337,12 @@ def bottom_split(arr):
 
 def main():
     ext = '.raw' if scene == 'coast' else '.dat'
-    #PAN = N.arange(144).reshape(12,12)
-    PAN = N.fromfile(os.path.join(sourcedir, scene, 'b8'+ext), 'uint8').reshape((M,M))
-    MS_R = N.fromfile(os.path.join(sourcedir, scene, 'b3'+ext), 'uint8').reshape((K,K))
-    print "This is PAN" , PAN
-    print "THis is MS_R" ,MS_R
-    sys.exit(0)
+    PAN = N.arange(144).reshape(12,12)
+    #PAN = N.fromfile(os.path.join(sourcedir, scene, 'b8'+ext), 'uint8').reshape((M,M))
+    #MS_R = N.fromfile(os.path.join(sourcedir, scene, 'b3'+ext), 'uint8').reshape((K,K))
+    #print "This is PAN" , PAN
+    #print "THis is MS_R" ,MS_R
+    #sys.exit(0)
     """
     PAN Image functions
     """
@@ -351,8 +380,8 @@ def main():
     """
     MS Red band
     """
-    #MS_R = N.arange(36)
-    #MS_R = MS_R[::-1].reshape(6,6)
+    MS_R = N.arange(36)
+    MS_R = MS_R[::-1].reshape(6,6)
     MS_R = enlarge(MS_R)
     h = UWA(MS_R)
     
@@ -439,7 +468,7 @@ def main():
     END of MS Blue BAND
     """
     """
-    LCC
+    PADDING
     """
     """PADDED PAN Image"""
     pad_LL_pan = mirrorpad(LL_pan,(1,1,1,1))
@@ -464,7 +493,13 @@ def main():
     pad_LH_MS_B = mirrorpad(LH_MS_B, (1,1,1,1)) 
     pad_HL_MS_B = mirrorpad(HL_MS_B, (1,1,1,1)) 
     pad_HH_MS_B = mirrorpad(HH_MS_B, (1,1,1,1)) 
+    """
+    PADDING END
+    """
     
+    """
+    LCC
+    """
     """LCC LL PAN with LL MS Red band"""
     LCC_LL_MS_R = window(pad_LL_pan,pad_LL_MS_R)
     """LCC LL PAN with LL MS Green band"""
@@ -473,6 +508,9 @@ def main():
     LCC_LL_MS_B = window(pad_LL_pan,pad_LL_MS_B)
     
     
+    """
+    END of LCC
+    """
     
     HLRED = windowDF(pad_LL_pan, pad_LL_MS_R,pad_HL_pan,pad_HL_MS_R)
     HHRED = windowDF(pad_LL_pan,pad_LL_MS_R,pad_HH_pan,pad_HH_MS_R)
@@ -487,13 +525,12 @@ def main():
     HHBLUE = windowDF(pad_LL_pan,pad_LL_MS_B,pad_HH_pan,pad_HH_MS_B)
     LHBLUE = windowDF(pad_LL_pan,pad_LL_MS_B,pad_LH_pan,pad_LH_MS_B)
     
+    print "This is array LHBLUE" , LHBLUE
+    length = N.shape(PAN)[0]
+    width = N.shape(PAN)[1]
+    full_arr_R = N.zeros((length, width))
     
     
-    
-    
-    """
-    END of LCC
-    """
     
     """
     
