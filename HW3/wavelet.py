@@ -525,10 +525,22 @@ def main():
     HHBLUE = windowDF(pad_LL_pan,pad_LL_MS_B,pad_HH_pan,pad_HH_MS_B)
     LHBLUE = windowDF(pad_LL_pan,pad_LL_MS_B,pad_LH_pan,pad_LH_MS_B)
     
-    print "This is array LHBLUE" , LHBLUE
-    length = N.shape(PAN)[0]
-    width = N.shape(PAN)[1]
+    
+    """
+    Initialize the empty full size arrays for all 3 bands
+    To be filled in with their respective LL,HL, LH and HH
+    """
+    length = N.shape(PAN)[0] #rows
+    width = N.shape(PAN)[1]  #columns
     full_arr_R = N.zeros((length, width))
+    
+    
+    full_arr_G = N.zeros((length, width))
+    
+    
+    full_arr_B = N.zeros((length, width))
+    """
+    """
     
     
     
