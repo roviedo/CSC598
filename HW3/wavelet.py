@@ -1,7 +1,22 @@
 #!/usr/bin/python
-
 import numpy as N
-from math import sqrt 
+import os.path
+import scipy.signal
+import scipy.interpolate
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+from math import sqrt
+import sys
+sourcedir = '/home/raul/CSC598/HW3/'
+scene = 'Agriculture'   # 'mountain', 'coast'
+K = 1024
+M = 2048
+#bands = ['b1', 'b2', 'b3', 'b4', 'b5', 'b7']
+bands = ['b3','b2','b1']
+
+
+
+ 
 """
 1) Implement Pyramid-Based fusion method (figure 9 of the Wavelet based fusion methods handout posted on General Resources )
 
@@ -77,7 +92,7 @@ def Pyramid():
     y = 4
     len = x* y
     A=N.arange(len).reshape((x,y))
-    print "this is array " ,"\n", A
+    #print "this is array " ,"\n", A
 
     #PAD ARRAY WITH ZEROS
     C = N.insert (A, (0,x), 0, axis=1)
@@ -94,7 +109,7 @@ def Pyramid():
             if i%2 == 0 and j%2==0:
                 slice_array =A[i:(2+i) , j:(2+j)]
                 g = N.append(g, N.average(slice_array))
-    print "This is g" , g
+    #print "This is g" , g
 
                                                      
 def UWA_left_split(arr):                                                        
@@ -194,7 +209,7 @@ def window(PAN, MS):
             #PANW = N.ravel(PAN)
             MSW=  MS[i:i+dy, j:j+dx]
             #MSW = N.ravel(MS)
-            print "This is PANW" , PANW , "\n", "This is MSW" , MSW
+            #print "This is PANW" , PANW , "\n", "This is MSW" , MSW
             LCC = lcc(PANW, MSW)
             
             new_arr = N.append(new_arr,LCC)
@@ -221,22 +236,26 @@ def windowDF(PAN, MS, HL_PAN, HL_MS):
             MSW=  MS[i:i+dy, j:j+dx]
             HL_PANW = HL_PAN[i:i+dy, j:j+dx]
             HL_MSW = HL_MS[i:i+dy, j:j+dx]
-            #print "Thi is HL_PAN" , HL_PANW
-            #print "This is HL_MS " , HL_MSW
-            #HL_PAN = N.ravel(HL_PAN)
-            #HL_MS = N.ravel(HL_MS)
+            print "Thi is HL_PAN" , HL_PANW
+            print "This is HL_MS " , HL_MSW
+            HL_PANW = N.ravel(HL_PAN)
+            HL_MSW = N.ravel(HL_MS)
             LCC = lcc(PANW, MSW)
-            #print "This is LCC" , LCC
+            print "This is LCC" , LCC
             LG = lg(PANW, MSW)
+            print "this is LG" ,LG
             """If LCC is greater than threshold(0.6)"""
             if LCC<0.6:
                 LG = 0
             else:
-                HLA = LG*HL_PAN[4] +HL_MS[4] 
+                HLA = LG*HL_PANW[4] +HL_MSW[4] 
             new_arr = N.append(new_arr,HLA)
     return new_arr
 
 def lg(PAN, MS):                                                                      
+    """
+    Local gain function
+    """
     PAN = N.ravel(PAN)                                                                
     MS = N.ravel(MS)                                                                  
     PANavg = N.average(PAN)                                                           
@@ -246,12 +265,15 @@ def lg(PAN, MS):
     for i in range(9):                                                                
         PANvar += (PAN[i] - PANavg)                                                   
         MSvar += (MS[i] -   MSavg)                                                    
-        print "This is i PANvar" , PANvar                                             
-        print "This is i MSvar" , MSvar                                               
+        #print "This is i PANvar" , PANvar                                             
+        #print "This is i MSvar" , MSvar                                               
         LG = MSvar/float(PANvar)                                                      
     return LG   
 
 def lcc(PAN, MS):
+    """
+    Local Correlation Coefficient function
+    """
     #new_arr = N.array([])
     PAN = N.ravel(PAN)
     MS = N.ravel(MS)
@@ -285,8 +307,13 @@ def bottom_split(arr):
     return b
 
 def main():
-    PAN = N.arange(144).reshape(12,12)
-    
+    ext = '.raw' if scene == 'coast' else '.dat'
+    #PAN = N.arange(144).reshape(12,12)
+    PAN = N.fromfile(os.path.join(sourcedir, scene, 'b8'+ext), 'uint8').reshape((M,M))
+    MS_R = N.fromfile(os.path.join(sourcedir, scene, 'b3'+ext), 'uint8').reshape((K,K))
+    print "This is PAN" , PAN
+    print "THis is MS_R" ,MS_R
+    sys.exit(0)
     """
     PAN Image functions
     """
@@ -324,8 +351,8 @@ def main():
     """
     MS Red band
     """
-    MS_R = N.arange(36)
-    MS_R = MS_R[::-1].reshape(6,6)
+    #MS_R = N.arange(36)
+    #MS_R = MS_R[::-1].reshape(6,6)
     MS_R = enlarge(MS_R)
     h = UWA(MS_R)
     
@@ -459,6 +486,11 @@ def main():
     HLBLUE = windowDF(pad_LL_pan, pad_LL_MS_B, pad_HL_pan,pad_HL_MS_B)
     HHBLUE = windowDF(pad_LL_pan,pad_LL_MS_B,pad_HH_pan,pad_HH_MS_B)
     LHBLUE = windowDF(pad_LL_pan,pad_LL_MS_B,pad_LH_pan,pad_LH_MS_B)
+    
+    
+    
+    
+    
     """
     END of LCC
     """
