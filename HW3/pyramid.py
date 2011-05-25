@@ -1,14 +1,30 @@
-#!/usr/bin/python
+#!/usr/bin/python                                                               
+import numpy as N                                                               
+import os.path                                                                  
+import scipy.signal                                                             
+import scipy.interpolate                                                        
+import matplotlib.pyplot as plt                                                 
+import matplotlib.cm as cm                                                      
+from math import sqrt                                                           
+import sys                                                                      
+sourcedir = '/home/raul/CSC598/HW3/'                                            
+scene = 'Agriculture'   # 'mountain', 'coast'                                   
+K = 1024                                                                        
+M = 2048                                                                        
+#bands = ['b1', 'b2', 'b3', 'b4', 'b5', 'b7']                                   
+bands = ['b3','b2','b1']  
 
-import numpy as N
-from math import sqrt 
+
 """
 1) Implement Pyramid-Based fusion method (figure 9 of the Wavelet based fusion methods handout posted on General Resources )
+   pyramid.py is the file for this method
 
 2) Implement Wavelet-Based data fusion method (figure 8 of the Wavelet based fusion methods handout posted on General Resources )
+   wavelet.py is the file for this method
 
 3) Test it on MODIS pre-processed bands that are posted on: http://glasslab.org/u/georgeb/cap2011/
 Use MODIS pixel registration chart shown in Figure 1 of MODIS True Color handout (posted on General Resources). 
+   Not yet implemented
 
 Note: for LCC, you can use the sample correlation coefficients formula from 
 http://en.wikipedia.org/wiki/Correlation_and_dependence
@@ -82,8 +98,27 @@ def mirrorpad(img, width):
         
     return img          
     
-#3X3 sliding window pass in image and a tuple of the window size e.g. (3,3)
+
+def mirrorunpad(img, width):                                                   
+    """
+    Return unpadded image of img padded with :func:mirrorpad.               
+    """                                                                        
+    n, s, e, w = _get4widths(width)                                            
+    # index of -0 refers to the first element                                  
+    if s == 0:                                                                 
+        s = img.shape[0]                                                       
+    else:                                                                      
+        s = -s                                                                 
+    if e == 0:                                                                 
+        e = img.shape[1]                                                       
+    else:                                                                      
+        e = -e                                                                 
+    return img[n:s, w:e]  
+
 def window(PAN, MS, sub_PAN):
+    """
+    3X3 sliding window pass in image and a tuple of the window size e.g. (3,3)
+    """
     #PAN  = N.arange(36).reshape(6,6)
     #MS  = N.arange(36).reshape(6,6)
     #sub_PAN = N.arange(36).reshape(6,6)
@@ -118,6 +153,9 @@ def window(PAN, MS, sub_PAN):
     
 
 def lcc(PAN, MS):
+    """
+    Local Correlation Coefficient Function
+    """
     #new_arr = N.array([])
     #PAN = N.arange(9)
     #MS = N.arange(9)
@@ -138,7 +176,9 @@ def lcc(PAN, MS):
     return result
     
 def lg(PAN, MS):
-    
+    """
+    Local gain function
+    """
     PAN = N.ravel(PAN)
     MS = N.ravel(MS)
     PANavg = N.average(PAN)
@@ -157,6 +197,19 @@ def lg(PAN, MS):
 
 
 def main():
+    """
+    Load Landsat files
+    """
+    ext = '.raw' if scene == 'coast' else '.dat'
+    
+    #PAN = N.fromfile(os.path.join(sourcedir, scene, 'b8'+ext), 'uint8').reshape((M,M)) 
+    #MS_RED = N.fromfile(os.path.join(sourcedir, scene, 'b3'+ext), 'uint8').reshape((K,K))
+    #MS_GREEN = N.fromfile(os.path.join(sourcedir, scene, 'b2'+ext), 'uint8').reshape((K,K)) 
+    #MS_BLUE = N.fromfile(os.path.join(sourcedir, scene, 'b1'+ext), 'uint8').reshape((K,K))
+    
+    """
+    Testing arrays below
+    """
     PAN = N.arange(144).reshape(12,12)
     MS_RED = N.arange(36).reshape(6,6)
     MS_GREEN = N.arange(36).reshape(6,6)
@@ -193,18 +246,20 @@ def main():
     pad_enlarged_MS_BLUE = mirrorpad(enlarged_MS_BLUE, (1,1,1,1))
     pad_sub_PAN = mirrorpad(sub_PAN , (1,1,1,1))
     
-    pad_HR_MS_RED = window( pad_enlarged_PAN, pad_enlarged_MS_RED,pad_sub_PAN)
-    print "This HI Res MS Red Band" , pad_HR_MS_RED
-    pad_HR_MS_GREEN = window(pad_enlarged_PAN,pad_enlarged_MS_GREEN,pad_sub_PAN)
-    print "This HI Res MS Red Band" , pad_HR_MS_GREEN
-    pad_HR_MS_BLUE = window(pad_enlarged_PAN,pad_enlarged_MS_BLUE,pad_sub_PAN)
-    print "This HI Res MS Red Band" , pad_HR_MS_BLUE
+    """
+    Functions below are after we multiplied LG with edges and added it 
+    to MS image
+    """
+    
+    HR_MS_RED = window( pad_enlarged_PAN, pad_enlarged_MS_RED,pad_sub_PAN)
+    print "HiRes_MS_RED Band" , HR_MS_RED
+    HR_MS_GREEN = window(pad_enlarged_PAN,pad_enlarged_MS_GREEN,pad_sub_PAN)
+    print "HiRes_MS_GREEN Band" , HR_MS_GREEN
+    HR_MS_BLUE = window(pad_enlarged_PAN,pad_enlarged_MS_BLUE,pad_sub_PAN)
+    print "HiRes_MS_BLUE Band" , HR_MS_BLUE
     
     
     
 if __name__== "__main__":
     main()    
-    #Pyramid()
-    #window()
-    ##lcc()
-    #lg()
+    
