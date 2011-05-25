@@ -266,7 +266,7 @@ def windowDF(PAN, MS, HL_PAN, HL_MS):
             LG = lg(PANW, MSW)
             #print "this is LG" ,LG
             """If LCC is greater than threshold(0.6)"""
-            if LCC<0.6:
+            if LCC>=0.6:
                 LG = 0
             else:
                 HLA = LG*HL_PANW[4] +HL_MSW[4] 
@@ -334,6 +334,24 @@ def bottom_split(arr):
     col = N.shape(arr)[1]
     b = arr[row/2: , :]
     return b
+
+def UWS(arr1, arr2):
+    """
+    This is the function for Undecimated Wavelet Synthesis
+    """
+    arr1 = N.ravel(arr1)                                                            
+    arr2 = N.ravel(arr2)                                                            
+    i = 0                                                                       
+    arr = N.array([])                                                           
+    #arr1 = N.array([])                                                        $
+    
+    while(i<len(arr1)):                                                           
+        X1 = arr2[i]-arr1[i]                                                        
+        X2 = (2 * arr2[i]) - X1                                                   
+        arr = N.append(arr,X1)                                                  
+        arr = N.append(arr, X2)                                                 
+        i = i + 1 
+    return arr
 
 def main():
     ext = '.raw' if scene == 'coast' else '.dat'
@@ -532,15 +550,55 @@ def main():
     """
     length = N.shape(PAN)[0] #rows
     width = N.shape(PAN)[1]  #columns
-    full_arr_R = N.zeros((length, width))
+    
     
     
     full_arr_G = N.zeros((length, width))
     
     
     full_arr_B = N.zeros((length, width))
+    
+    
     """
+    Undecimated Wavelet Synthesis for Red band
     """
+    full_arr_R = N.zeros((length, width))
+    rgtside_arr_R = UWS(HHRED,HLRED)
+    rgtside_arr_R = N.reshape(rgtside_arr_R, (width, length/2))
+    lftside_arr_R = UWS(LHRED,LL_MS_R)
+    lftside_arr_R = N.reshape(lftside_arr_R, (width,length/2))
+    full_arr_R[:,width/2:]=rgtside_arr_R
+    
+    full_arr_R[: , :width/2] = lftside_arr_R
+    print "Full arr R" , full_arr_R
+    
+    """
+    Undecimated Wavelet Synthesis for Green band
+    """
+    full_arr_G = N.zeros((length, width))
+    rgtside_arr_G = UWS(HHGREEN,HLGREEN)
+    rgtside_arr_G = N.reshape(rgtside_arr_G, (width, length/2))
+    lftside_arr_G = UWS(LHGREEN,LL_MS_G)
+    lftside_arr_G = N.reshape(lftside_arr_G, (width,length/2))
+    full_arr_G[:,width/2:]=rgtside_arr_G
+    
+    full_arr_G[: , :width/2] = lftside_arr_G
+    print "Full arr G" , full_arr_G
+    
+    """
+    Undecimated Wavelet Synthesis for Blue band
+    """
+    full_arr_B = N.zeros((length, width))
+    rgtside_arr_B = UWS(HHBLUE,HLBLUE)
+    rgtside_arr_B = N.reshape(rgtside_arr_B, (width, length/2))
+    lftside_arr_B = UWS(LHBLUE,LL_MS_B)
+    lftside_arr_B = N.reshape(lftside_arr_B, (width,length/2))
+    full_arr_B[:,width/2:]=rgtside_arr_B
+    
+    full_arr_B[: , :width/2] = lftside_arr_B
+    print "Full MS array Blue band" , full_arr_B
+    
+    
     
     
     
