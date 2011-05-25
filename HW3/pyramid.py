@@ -28,6 +28,7 @@ def reduce(A):
     Reduce image to half size
     """
     x = N.shape(A)[0]
+    #print "this is length of A" , x
     y = N.shape(A)[1]
     g = N.array([])
     for i in range(x):
@@ -35,8 +36,9 @@ def reduce(A):
             if i%2 == 0 and j%2==0:
                 slice_array =A[i:(2+i) , j:(2+j)]
                 g = N.append(g, N.average(slice_array))
+                #print "length of g " , len(g)
                 
-    gg = g.reshape(3,3)            
+    gg = N.reshape(g,(x/2,y/2))            
     return gg
 
 def _get4widths(width):                                                         
@@ -65,15 +67,15 @@ def mirrorpad(img, width):
     if n != 0:                                                                                                                   
         north = img[:n,:]                                                                                                        
         img = N.row_stack((north[::-1,:], img))                                                                                  
-        print "This is img north", img                                                                                           
+        #print "This is img north", img                                                                                           
     if s != 0:                                                                                                                   
         south = img[-s:,:]                                                                                                       
         img = N.row_stack((img, south[::-1,:]))                                                                                  
-        print "This is img south", img                                                                                           
+        #print "This is img south", img                                                                                           
     if e != 0:                                                                                                                   
         east = img[:,-e:]                                                                                                        
         img = N.column_stack((img, east[:,::-1]))                                                                                
-        print "This is img east", img                                                                                            
+        #print "This is img east", img                                                                                            
     if w != 0:                                                                                                                   
         west = img[:,:w]                                                                                                         
         img = N.column_stack((west[:,::-1], img))                                                                                
@@ -81,41 +83,59 @@ def mirrorpad(img, width):
     return img          
     
 #3X3 sliding window pass in image and a tuple of the window size e.g. (3,3)
-def window():
-    im  = N.arange(36).reshape(6,6)
-    im2  = N.arange(36).reshape(6,6)
+def window(PAN, MS, sub_PAN):
+    #PAN  = N.arange(36).reshape(6,6)
+    #MS  = N.arange(36).reshape(6,6)
+    #sub_PAN = N.arange(36).reshape(6,6)
+    length = N.shape(PAN)[0]
+    width = N.shape(PAN)[1]
+    print "this is length", length, "this is width" ,width
     wsize = (3,3)
     dx, dy = wsize
-    nx = im.shape[1] -dx+1
-    ny = im.shape[0]- dy+1
-    
+    nx = PAN.shape[1] -dx+1
+    ny = PAN.shape[0]- dy+1
+    f = 0
     results= N.array([])
     for i in xrange(ny):
         for j in xrange(nx):
-            g =  im[i:i+dy, j:j+dx]
-            h =  im2[i:i+dy, j:j+dx]
+            g =  PAN[i:i+dy, j:j+dx]
+            h =  MS[i:i+dy, j:j+dx]
+            sub = sub_PAN[i:i+dy,j:j+dx]
             #PAN = N.array([11,23,45,65,78,22,89,76,90])
             #MS = N.array([56,54,78,34,69,21,48,98,46])
-            LG = lg(g,h)
-    print "this is LG" , LG
+            gg = N.ravel(g)
+            hh = N.ravel(h)
+            subb = N.ravel(sub)
+            LCC = lcc(gg,hh)
+            LG = lg(gg,hh)
+            if LCC<=0.6:
+                LG = 0
+            else:
+                f = LG*subb[4] + hh[4] 
+            results = N.append(results, f)
+    new_arr = N.reshape(results,(length-2, width-2))
+    return new_arr
+    
 
-def lcc():
+def lcc(PAN, MS):
     #new_arr = N.array([])
-    PAN = N.arange(9)
-    print "PAN" , PAN
-    MS = N.arange(9)
-    print "MS" , MS
+    #PAN = N.arange(9)
+    #MS = N.arange(9)
     #MS = MS[::-1]
+    PAN = N.ravel(PAN)
+    MS = N.ravel(MS)
     numerator = 0
     denominator = 0
-    for i in PAN:
+    for i in range(9):
         numerator += ((PAN[i] - N.average(PAN)) * (MS[i]-N.average(MS)))
         denominator += ((PAN[i]-N.average(PAN))**2 )*((MS[i]-N.average(MS))**2)
-    
-    print "numerator" , numerator, "denominator" ,denominator
-    result = numerator/float(sqrt(denominator))
-    print "this is result" , result
-
+    if (float(sqrt(denominator))) == 0:
+        result = 0
+    else:
+        #print "numerator" , numerator, "denominator" ,denominator
+        result = numerator/float(sqrt(denominator))
+        #print "this is result" , result
+    return result
     
 def lg(PAN, MS):
     
@@ -128,25 +148,57 @@ def lg(PAN, MS):
     for i in range(9):
         PANvar += (PAN[i] - PANavg)
         MSvar += (MS[i] -   MSavg)
-        print "This is i PANvar" , PANvar
-        print "This is i MSvar" , MSvar
-        LG = MSvar/float(PANvar)
+        if (float(PANvar))==0:
+            LG = 0
+        else:
+            LG = MSvar/float(PANvar)
     return LG    
 
 
 
 def main():
-    PAN = N.arange(36).reshape(6,6)
-    MS_RED = N.arange(16).reshape(4,4)
-    MS_GREEN = N.arange(16).reshape(4,4)
-    MS_BLUE = N.arange(16).reshape(4,4)
+    PAN = N.arange(144).reshape(12,12)
+    MS_RED = N.arange(36).reshape(6,6)
+    MS_GREEN = N.arange(36).reshape(6,6)
+    MS_BLUE = N.arange(36).reshape(6,6)
+    """
+    Here is our reduced PAN image
+    """
     red_PAN = reduce(PAN)
-    print "red_pan" , red_PAN
+    
+    """
+    Below we get our enlarged PAN after we reduced it 
+    """
     enlarged_PAN =enlarge(red_PAN)
-    print "this is enlarged", enlarged
-     
-    sub_PAN = N.subtract(PAN ,enlarged)
-    print "This is sub" ,sub
+    
+    """
+    This here is the function that subtract PAN - enlarged PAN to get edges
+    """
+    sub_PAN = N.subtract(PAN ,enlarged_PAN)
+    
+    
+    """
+    These are the three bands enlarged to match size of PAN image
+    """
+    enlarged_MS_RED = enlarge(MS_RED)
+    enlarged_MS_GREEN = enlarge(MS_GREEN)
+    enlarged_MS_BLUE = enlarge(MS_BLUE)
+    
+    """
+    These are the padded PAN and MS images
+    """
+    pad_enlarged_PAN = mirrorpad(enlarged_PAN, (1,1,1,1))
+    pad_enlarged_MS_RED = mirrorpad(enlarged_MS_RED, (1,1,1,1))
+    pad_enlarged_MS_GREEN = mirrorpad(enlarged_MS_GREEN, (1,1,1,1))
+    pad_enlarged_MS_BLUE = mirrorpad(enlarged_MS_BLUE, (1,1,1,1))
+    pad_sub_PAN = mirrorpad(sub_PAN , (1,1,1,1))
+    
+    pad_HR_MS_RED = window( pad_enlarged_PAN, pad_enlarged_MS_RED,pad_sub_PAN)
+    print "This HI Res MS Red Band" , pad_HR_MS_RED
+    pad_HR_MS_GREEN = window(pad_enlarged_PAN,pad_enlarged_MS_GREEN,pad_sub_PAN)
+    print "This HI Res MS Red Band" , pad_HR_MS_GREEN
+    pad_HR_MS_BLUE = window(pad_enlarged_PAN,pad_enlarged_MS_BLUE,pad_sub_PAN)
+    print "This HI Res MS Red Band" , pad_HR_MS_BLUE
     
     
     
